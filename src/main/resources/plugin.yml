@@ -1,0 +1,5 @@
+name: nobsheads
+version: "0.0.1"
+author: TxT
+main: com.txt.nobsheadsplugin.NoBsHeadsPlugin
+api-version: "1.17"
