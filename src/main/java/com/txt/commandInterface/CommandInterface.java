@@ -1,19 +1,20 @@
 package com.txt.commandInterface;
 
-import java.util.UUID;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.block.Block;
-import org.bukkit.block.Skull;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.Merchant;
+import org.bukkit.inventory.MerchantInventory;
+import org.bukkit.inventory.MerchantRecipe;
 import org.bukkit.inventory.meta.SkullMeta;
-
-import net.md_5.bungee.api.chat.hover.content.Item;
 
 public class CommandInterface implements CommandExecutor {
   public CommandInterface() {
@@ -48,8 +49,16 @@ public class CommandInterface implements CommandExecutor {
     } catch(Exception e) {
       itemStack.setAmount(1);
     }
-    playerSender.getLocation().getWorld().dropItem(playerSender.getLocation(), itemStack);
 
+    //playerSender.getLocation().getWorld().dropItem(playerSender.getLocation(), itemStack);
+
+    Merchant merchant = Bukkit.createMerchant("NoBsHeads");
+    List<MerchantRecipe> recipes = new ArrayList<>();
+    MerchantRecipe recipe = new MerchantRecipe(itemStack, 0, 99999, false, 0, 10, true);
+    recipe.addIngredient(new ItemStack(Material.DIAMOND));
+    recipes.add(recipe);
+    merchant.setRecipes(recipes);
+    playerSender.openMerchant(merchant, true);
     return false;
   }
 }
