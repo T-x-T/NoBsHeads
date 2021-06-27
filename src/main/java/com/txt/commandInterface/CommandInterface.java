@@ -3,18 +3,19 @@ package com.txt.commandInterface;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.txt.nobsheadsplugin.HeadFactory;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Merchant;
-import org.bukkit.inventory.MerchantInventory;
 import org.bukkit.inventory.MerchantRecipe;
-import org.bukkit.inventory.meta.SkullMeta;
+
+import net.kyori.adventure.text.Component;
 
 public class CommandInterface implements CommandExecutor {
   public CommandInterface() {
@@ -40,25 +41,27 @@ public class CommandInterface implements CommandExecutor {
     }
     
     Player playerSender = (Player) sender;
-    ItemStack itemStack = new ItemStack(Material.PLAYER_HEAD);
-    SkullMeta meta = (SkullMeta) itemStack.getItemMeta();
-    meta.setOwner(args[1]); //Must use deprecated API to access player heads from players who have never been online
-    itemStack.setItemMeta(meta);
-    try {
-      itemStack.setAmount(Integer.parseInt(args[2]));
-    } catch(Exception e) {
-      itemStack.setAmount(1);
+
+    if(args.length == 1 || args[1].length() < 1) {
+      return false;
     }
 
-    //playerSender.getLocation().getWorld().dropItem(playerSender.getLocation(), itemStack);
+    ItemStack itemStack = HeadFactory.getHeadByName(args[1]);
 
-    Merchant merchant = Bukkit.createMerchant("NoBsHeads");
+    System.out.println(itemStack.serialize().toString());
+    
+
+    
+    Merchant merchant = Bukkit.createMerchant(Component.text("NoBsHeads"));
+
     List<MerchantRecipe> recipes = new ArrayList<>();
     MerchantRecipe recipe = new MerchantRecipe(itemStack, 0, 99999, false, 0, 10, true);
     recipe.addIngredient(new ItemStack(Material.DIAMOND));
     recipes.add(recipe);
     merchant.setRecipes(recipes);
+
     playerSender.openMerchant(merchant, true);
-    return false;
+
+    return true;
   }
 }

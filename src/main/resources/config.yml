@@ -1,0 +1,117 @@
+recipes:
+  shapeless:
+    - 
+      input: 
+        - APPLE
+      result: MHF_Apple
+    - 
+      input: 
+        - CACTUS
+      result: MHF_Cactus
+    - 
+      input: 
+        - CAKE
+      result: MHF_Cake
+    - 
+      input: 
+        - CHEST
+      result: MHF_Chest
+    - 
+      input: 
+        - OAK_PLANKS
+        - BROWN_DYE
+      result: MHF_CoconutB
+    - 
+      input: 
+        - OAK_PLANKS
+        - GREEN_DYE
+      result: MHF_CoconutG
+    - 
+      input: 
+        - MELON
+      result: MHF_Melon
+    - 
+      input: 
+        - OAK_LOG
+      result: MHF_OakLog
+    - 
+      input: 
+        - CHEST
+        - GREEN_DYE
+        - GOLD_NUGGET
+      result: MHF_Present1
+    - 
+      input: 
+        - CHEST
+        - RED_DYE
+        - GOLD_NUGGET
+      result: MHF_Present2
+    - 
+      input: 
+        - PUMPKIN
+      result: MHF_Pumpkin
+    - 
+      input: 
+        - TNT_MINECART
+      result: MHF_TNT
+    - 
+      input: 
+        - TNT
+      result: MHF_TNT2
+    - 
+      input: 
+        - STONE
+      result: MHF_Stone
+    - 
+      input: 
+        - COBBLESTONE
+      result: MHF_Cobblestone
+    - 
+      input: 
+        - MOSSY_COBBLESTONE
+      result: MHF_Mossycobble
+    - 
+      input: 
+        - STONE_BRICKS
+      result: MHF_Stonebrick
+    - 
+      input: 
+        - MOSSY_STONE_BRICKS
+      result: MHF_Mossybrick
+    - 
+      input: 
+        - CRACKED_STONE_BRICKS
+      result: MHF_Crackedbrick
+    - 
+      input: 
+        - ENDER_CHEST
+      result: MHF_Enderchest
+    - 
+      input: 
+        - GRASS_BLOCK
+      result: MHF_Grass
+
+    - 
+      input: 
+        - RED_STAINED_GLASS
+        - WHITE_DYE
+      result: MHF_Youtube
+  shaped:
+    -
+      shape:
+        - aaa
+        - a a
+        - aaa
+      materials:
+        a: IRON_INGOT
+      result: MHF_Iron
+    -
+      shape:
+        - aa
+        - ab
+      materials:
+        a: IRON_INGOT
+        b: REDSTONE
+      result: MHF_Cam
+#DONT CHANGE THIS
+version: 1

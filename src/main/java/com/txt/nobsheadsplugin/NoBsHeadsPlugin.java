@@ -12,6 +12,8 @@ public class NoBsHeadsPlugin extends JavaPlugin {
 
   @Override
   public void onEnable(){
+    this.saveDefaultConfig();
+
     CommandInterface commandInterface = new CommandInterface();
     this.getCommand("heads").setExecutor(commandInterface);
     
