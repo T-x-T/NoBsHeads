@@ -6,6 +6,8 @@ import com.txt.craftingInterface.CraftingInterface;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class NoBsHeadsPlugin extends JavaPlugin {
+  private CommandInterface commandInterface;
+
   public NoBsHeadsPlugin() {
 
   }
@@ -14,7 +16,7 @@ public class NoBsHeadsPlugin extends JavaPlugin {
   public void onEnable(){
     this.saveDefaultConfig();
 
-    CommandInterface commandInterface = new CommandInterface();
+    this.commandInterface = new CommandInterface(this);
     this.getCommand("heads").setExecutor(commandInterface);
     
     new CraftingInterface(this);
@@ -22,6 +24,6 @@ public class NoBsHeadsPlugin extends JavaPlugin {
 
   @Override
   public void onDisable(){
-
+    this.commandInterface.savePurchaseHistory();
   }
 }

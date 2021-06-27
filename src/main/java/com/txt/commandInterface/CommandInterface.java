@@ -1,8 +1,16 @@
 package com.txt.commandInterface;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.UUID;
 
 import com.txt.nobsheadsplugin.HeadFactory;
 
@@ -15,14 +23,57 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Merchant;
 import org.bukkit.inventory.MerchantRecipe;
+import org.bukkit.plugin.java.JavaPlugin;
 
 import net.kyori.adventure.text.Component;
 
 public class CommandInterface implements CommandExecutor {
-  private final HashMap<Player, ArrayList<String>> purchaseHistory;
+  private HashMap<UUID, ArrayList<String>> purchaseHistory;
+  private JavaPlugin plugin;
 
-  public CommandInterface() {
+  public CommandInterface(JavaPlugin plugin) {
+    this.plugin = plugin;
     this.purchaseHistory = new HashMap<>();
+    this.loadPurchaseHistory();
+    this.savePurchaseHistoryPeriodically(2000);
+  }
+
+  @SuppressWarnings("unchecked")
+  private void loadPurchaseHistory() {
+    File purchaseHistoryFile = new File("./plugins/nobsheads/purchaseHistory.dat");
+    
+    if(!purchaseHistoryFile.exists()) return;
+
+    try {
+      FileInputStream is = new FileInputStream(purchaseHistoryFile);
+      ObjectInputStream ois = new ObjectInputStream(is);
+      this.purchaseHistory = (HashMap<UUID, ArrayList<String>>)ois.readObject();
+      ois.close();
+      is.close();
+    } catch (IOException e) {
+      e.printStackTrace();
+    } catch (ClassNotFoundException e) {
+      e.printStackTrace();
+    }
+  }
+
+  private void savePurchaseHistoryPeriodically(int everyTicks) {
+    Bukkit.getScheduler().runTaskTimer(plugin, () -> savePurchaseHistory(), everyTicks, everyTicks);
+  }
+
+  public void savePurchaseHistory() {
+    try {
+      FileOutputStream os = new FileOutputStream("./plugins/nobsheads/purchaseHistory.dat");
+      ObjectOutputStream oos = new ObjectOutputStream(os);
+      oos.writeObject(this.purchaseHistory);
+      oos.close();
+      os.close();
+    } catch (FileNotFoundException e) {
+      e.printStackTrace();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+
   }
 
   @Override
@@ -53,22 +104,22 @@ public class CommandInterface implements CommandExecutor {
       ArrayList<String> purchaseList = new ArrayList<>();
       purchaseList.add(args[1]);
 
-      if (!purchaseHistory.containsKey(playerSender)) {
-        purchaseHistory.put(playerSender, purchaseList);
+      if (!purchaseHistory.containsKey(playerSender.getUniqueId())) {
+        purchaseHistory.put(playerSender.getUniqueId(), purchaseList);
       } else {
-        purchaseHistory.get(playerSender).remove(args[1]);
-        purchaseList.addAll(purchaseHistory.get(playerSender));
-        purchaseHistory.put(playerSender, purchaseList);
+        purchaseHistory.get(playerSender.getUniqueId()).remove(args[1]);
+        purchaseList.addAll(purchaseHistory.get(playerSender.getUniqueId()));
+        purchaseHistory.put(playerSender.getUniqueId(), purchaseList);
       }
-    } else if (!purchaseHistory.containsKey(playerSender)) {
+    } else if (!purchaseHistory.containsKey(playerSender.getUniqueId())) {
       playerSender.sendMessage(Component.text("You need to buy a head, before you can look at your purchase history"));
     }
 
     Merchant merchant = Bukkit.createMerchant(Component.text("NoBsHeads"));
 
     List<MerchantRecipe> recipes = new ArrayList<>();
-
-    purchaseHistory.get(playerSender).forEach((name) -> {
+    
+    purchaseHistory.get(playerSender.getUniqueId()).forEach((name) -> {
       ItemStack itemStack = HeadFactory.getHeadByName(name);
       MerchantRecipe recipe = new MerchantRecipe(itemStack, 0, 99999, false, 0, 10, true);
       recipe.addIngredient(new ItemStack(Material.DIAMOND));
