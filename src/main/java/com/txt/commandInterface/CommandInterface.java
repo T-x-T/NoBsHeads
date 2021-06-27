@@ -1,6 +1,7 @@
 package com.txt.commandInterface;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import com.txt.nobsheadsplugin.HeadFactory;
@@ -18,12 +19,18 @@ import org.bukkit.inventory.MerchantRecipe;
 import net.kyori.adventure.text.Component;
 
 public class CommandInterface implements CommandExecutor {
-  public CommandInterface() {
+  private final HashMap<Player, ArrayList<String>> purchaseHistory;
 
+  public CommandInterface() {
+    this.purchaseHistory = new HashMap<>();
   }
 
   @Override
   public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+    if(args.length < 1) {
+      return false;
+    }
+
     switch(args[0]) {
       case "buy": {
         return buyCommand(sender, command, label, args);
@@ -42,24 +49,33 @@ public class CommandInterface implements CommandExecutor {
     
     Player playerSender = (Player) sender;
 
-    if(args.length == 1 || args[1].length() < 1) {
-      return false;
+    if (args.length > 1) {
+      ArrayList<String> purchaseList = new ArrayList<>();
+      purchaseList.add(args[1]);
+
+      if (!purchaseHistory.containsKey(playerSender)) {
+        purchaseHistory.put(playerSender, purchaseList);
+      } else {
+        purchaseHistory.get(playerSender).remove(args[1]);
+        purchaseList.addAll(purchaseHistory.get(playerSender));
+        purchaseHistory.put(playerSender, purchaseList);
+      }
+    } else if (!purchaseHistory.containsKey(playerSender)) {
+      playerSender.sendMessage(Component.text("You need to buy a head, before you can look at your purchase history"));
     }
 
-    ItemStack itemStack = HeadFactory.getHeadByName(args[1]);
-
-    System.out.println(itemStack.serialize().toString());
-    
-
-    
     Merchant merchant = Bukkit.createMerchant(Component.text("NoBsHeads"));
 
     List<MerchantRecipe> recipes = new ArrayList<>();
-    MerchantRecipe recipe = new MerchantRecipe(itemStack, 0, 99999, false, 0, 10, true);
-    recipe.addIngredient(new ItemStack(Material.DIAMOND));
-    recipes.add(recipe);
-    merchant.setRecipes(recipes);
 
+    purchaseHistory.get(playerSender).forEach((name) -> {
+      ItemStack itemStack = HeadFactory.getHeadByName(name);
+      MerchantRecipe recipe = new MerchantRecipe(itemStack, 0, 99999, false, 0, 10, true);
+      recipe.addIngredient(new ItemStack(Material.DIAMOND));
+      recipes.add(recipe);
+    });
+
+    merchant.setRecipes(recipes);
     playerSender.openMerchant(merchant, true);
 
     return true;

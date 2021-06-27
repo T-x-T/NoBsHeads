@@ -6,4 +6,4 @@ api-version: "1.17"
 commands:
   heads:
     description: Command to buy heads and to configure the plugin
-    usage: /<command> buy [UUID] [count]
+    usage: /<command> buy [name]
