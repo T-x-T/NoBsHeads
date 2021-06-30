@@ -66,7 +66,17 @@ public class CommandInterface implements CommandExecutor {
   private void savePurchaseHistoryPeriodically(int everyTicks) {
     Bukkit.getScheduler().runTaskTimer(plugin, () -> savePurchaseHistory(), everyTicks, everyTicks);
   }
-  //TODO: Make this async
+
+  public void savePurchaseHistoryAsyncIfPossible() {
+    if(this.plugin.getServer().getPluginManager().isPluginEnabled(this.plugin)) {
+      Bukkit.getScheduler().runTaskAsynchronously(this.plugin, () -> {
+        this.savePurchaseHistory();
+      });
+    } else {
+      this.savePurchaseHistory();
+    }
+  }
+  
   public void savePurchaseHistory() {
     try {
       FileOutputStream os = new FileOutputStream("./plugins/nobsheads/purchaseHistory.dat");
@@ -79,7 +89,6 @@ public class CommandInterface implements CommandExecutor {
     } catch (IOException e) {
       e.printStackTrace();
     }
-
   }
 
   @Override
