@@ -31,11 +31,17 @@ public class CommandInterface implements CommandExecutor {
   private HashMap<UUID, ArrayList<String>> purchaseHistory;
   private JavaPlugin plugin;
 
+  private ItemStack tradeIngredient;
+  private int tradeResultAmount;
+
   public CommandInterface(JavaPlugin plugin) {
     this.plugin = plugin;
     this.purchaseHistory = new HashMap<>();
     this.loadPurchaseHistory();
     this.savePurchaseHistoryPeriodically(2000);
+
+    this.tradeIngredient = new ItemStack(Material.getMaterial(this.plugin.getConfig().getString("trading.ingredient")), this.plugin.getConfig().getInt("trading.ingredientAmount"));
+    this.tradeResultAmount = this.plugin.getConfig().getInt("trading.resultAmount");
   }
 
   @SuppressWarnings("unchecked")
@@ -60,7 +66,7 @@ public class CommandInterface implements CommandExecutor {
   private void savePurchaseHistoryPeriodically(int everyTicks) {
     Bukkit.getScheduler().runTaskTimer(plugin, () -> savePurchaseHistory(), everyTicks, everyTicks);
   }
-
+  //TODO: Make this async
   public void savePurchaseHistory() {
     try {
       FileOutputStream os = new FileOutputStream("./plugins/nobsheads/purchaseHistory.dat");
@@ -120,9 +126,9 @@ public class CommandInterface implements CommandExecutor {
     List<MerchantRecipe> recipes = new ArrayList<>();
     
     purchaseHistory.get(playerSender.getUniqueId()).forEach((name) -> {
-      ItemStack itemStack = HeadFactory.getHeadByName(name);
+      ItemStack itemStack = HeadFactory.getHeadsByName(name, this.tradeResultAmount);
       MerchantRecipe recipe = new MerchantRecipe(itemStack, 0, 99999, false, 0, 10, true);
-      recipe.addIngredient(new ItemStack(Material.DIAMOND));
+      recipe.addIngredient(this.tradeIngredient);
       recipes.add(recipe);
     });
 

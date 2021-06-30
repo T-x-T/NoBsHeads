@@ -1,3 +1,7 @@
+trading:
+  ingredient: DIAMOND
+  ingredientAmount: 1
+  resultAmount: 16
 recipes:
   shapeless:
     - 
