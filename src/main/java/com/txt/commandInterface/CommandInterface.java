@@ -1,12 +1,5 @@
 package com.txt.commandInterface;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -37,66 +30,19 @@ public class CommandInterface implements CommandExecutor {
   public CommandInterface(JavaPlugin plugin) {
     this.plugin = plugin;
     this.purchaseHistory = new HashMap<>();
-    this.loadPurchaseHistory();
+    this.purchaseHistory = PurchaseHistoryPersistance.loadPurchaseHistory(plugin);
     this.savePurchaseHistoryPeriodically(2000);
 
-    this.tradeIngredient = new ItemStack(Material.getMaterial(this.plugin.getConfig().getString("trading.ingredient")), this.plugin.getConfig().getInt("trading.ingredientAmount"));
+    this.tradeIngredient = new ItemStack(Material.getMaterial(plugin.getConfig().getString("trading.ingredient")), plugin.getConfig().getInt("trading.ingredientAmount"));
     this.tradeResultAmount = this.plugin.getConfig().getInt("trading.resultAmount");
   }
 
-  @SuppressWarnings("unchecked")
-  private void loadPurchaseHistory() {
-    File purchaseHistoryFile = new File("./plugins/nobsheads/purchaseHistory.dat");
-    
-    if(!purchaseHistoryFile.exists()) return;
-
-    try {
-      FileInputStream is = new FileInputStream(purchaseHistoryFile);
-      ObjectInputStream ois = new ObjectInputStream(is);
-      HashMap<UUID, ArrayList<String>> tempPurchaseList = (HashMap<UUID, ArrayList<String>>)ois.readObject();
-      ois.close();
-      is.close();
-
-      tempPurchaseList.forEach((uuid, names) -> {
-        names.removeIf((name) -> {
-          return !this.isHeadPurchasable(name);
-        });
-        this.purchaseHistory.put(uuid, names);
-      });
-
-    } catch (IOException e) {
-      e.printStackTrace();
-    } catch (ClassNotFoundException e) {
-      e.printStackTrace();
-    }
-  }
-
   private void savePurchaseHistoryPeriodically(int everyTicks) {
-    Bukkit.getScheduler().runTaskTimer(plugin, () -> savePurchaseHistory(), everyTicks, everyTicks);
+    Bukkit.getScheduler().runTaskTimer(plugin, () -> PurchaseHistoryPersistance.savePurchaseHistoryAsyncIfPossible(plugin, purchaseHistory), everyTicks, everyTicks);
   }
 
-  public void savePurchaseHistoryAsyncIfPossible() {
-    if(this.plugin.getServer().getPluginManager().isPluginEnabled(this.plugin)) {
-      Bukkit.getScheduler().runTaskAsynchronously(this.plugin, () -> {
-        this.savePurchaseHistory();
-      });
-    } else {
-      this.savePurchaseHistory();
-    }
-  }
-  
-  public void savePurchaseHistory() {
-    try {
-      FileOutputStream os = new FileOutputStream("./plugins/nobsheads/purchaseHistory.dat");
-      ObjectOutputStream oos = new ObjectOutputStream(os);
-      oos.writeObject(this.purchaseHistory);
-      oos.close();
-      os.close();
-    } catch (FileNotFoundException e) {
-      e.printStackTrace();
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
+  public void disable() {
+    PurchaseHistoryPersistance.savePurchaseHistoryAsyncIfPossible(this.plugin, this.purchaseHistory);
   }
 
   @Override
@@ -125,7 +71,7 @@ public class CommandInterface implements CommandExecutor {
     Player playerSender = (Player) sender;
     
     if (args.length > 1) {
-      if(!this.isHeadPurchasable(args[1])) {
+      if(!HeadFactory.isHeadPurchasable(this.plugin, args[1])) {
         sender.sendMessage(Component.text("You are not allowed to buy this head"));
         return true;
       }
@@ -157,24 +103,6 @@ public class CommandInterface implements CommandExecutor {
 
     merchant.setRecipes(recipes);
     playerSender.openMerchant(merchant, true);
-
-    return true;
-  }
-
-  @SuppressWarnings("unchecked")
-  private boolean isHeadPurchasable(String nameToCheck) {
-    ArrayList<String> list = (ArrayList<String>) this.plugin.getConfig().getList("trading.list");
-
-    boolean contains = false;
-    for (int i = 0; i < list.size(); i++) {
-      if (list.get(i).equalsIgnoreCase(nameToCheck)) contains = true;
-    }
-
-    if (this.plugin.getConfig().getString("trading.listMode").equals("deny")) {
-      if (contains) return false;
-    } else if (this.plugin.getConfig().getString("trading.listMode").equals("allow")) {
-      if (!contains) return false;
-    }
 
     return true;
   }

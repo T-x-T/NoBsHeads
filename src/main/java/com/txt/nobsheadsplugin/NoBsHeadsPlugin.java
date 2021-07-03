@@ -24,6 +24,6 @@ public class NoBsHeadsPlugin extends JavaPlugin {
 
   @Override
   public void onDisable(){
-    this.commandInterface.savePurchaseHistory();
+    this.commandInterface.disable();
   }
 }

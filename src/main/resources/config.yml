@@ -5,7 +5,6 @@ trading:
   listMode: deny
   list:
     - this_is_purely_for_demonstration_purposes
-    - exxPloRe
 recipes:
   shapeless:
     - 
