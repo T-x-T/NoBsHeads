@@ -2,6 +2,10 @@ trading:
   ingredient: DIAMOND
   ingredientAmount: 1
   resultAmount: 16
+  listMode: deny
+  list:
+    - this_is_purely_for_demonstration_purposes
+    - exxPloRe
 recipes:
   shapeless:
     - 

@@ -53,9 +53,17 @@ public class CommandInterface implements CommandExecutor {
     try {
       FileInputStream is = new FileInputStream(purchaseHistoryFile);
       ObjectInputStream ois = new ObjectInputStream(is);
-      this.purchaseHistory = (HashMap<UUID, ArrayList<String>>)ois.readObject();
+      HashMap<UUID, ArrayList<String>> tempPurchaseList = (HashMap<UUID, ArrayList<String>>)ois.readObject();
       ois.close();
       is.close();
+
+      tempPurchaseList.forEach((uuid, names) -> {
+        names.removeIf((name) -> {
+          return !this.isHeadPurchasable(name);
+        });
+        this.purchaseHistory.put(uuid, names);
+      });
+
     } catch (IOException e) {
       e.printStackTrace();
     } catch (ClassNotFoundException e) {
@@ -112,10 +120,16 @@ public class CommandInterface implements CommandExecutor {
       sender.sendMessage("This command is only for players and not for ghosts in the shell!");
       return true;
     }
+
     
     Player playerSender = (Player) sender;
-
+    
     if (args.length > 1) {
+      if(!this.isHeadPurchasable(args[1])) {
+        sender.sendMessage(Component.text("You are not allowed to buy this head"));
+        return true;
+      }
+      
       ArrayList<String> purchaseList = new ArrayList<>();
       purchaseList.add(args[1]);
 
@@ -143,6 +157,24 @@ public class CommandInterface implements CommandExecutor {
 
     merchant.setRecipes(recipes);
     playerSender.openMerchant(merchant, true);
+
+    return true;
+  }
+
+  @SuppressWarnings("unchecked")
+  private boolean isHeadPurchasable(String nameToCheck) {
+    ArrayList<String> list = (ArrayList<String>) this.plugin.getConfig().getList("trading.list");
+
+    boolean contains = false;
+    for (int i = 0; i < list.size(); i++) {
+      if (list.get(i).equalsIgnoreCase(nameToCheck)) contains = true;
+    }
+
+    if (this.plugin.getConfig().getString("trading.listMode").equals("deny")) {
+      if (contains) return false;
+    } else if (this.plugin.getConfig().getString("trading.listMode").equals("allow")) {
+      if (!contains) return false;
+    }
 
     return true;
   }
